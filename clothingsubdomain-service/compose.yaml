@@ -1,0 +1,51 @@
+version: '3.6'
+
+services:
+  employeeservice: #Web app docker container
+    build: .
+    hostname: clothingservice
+    ports:
+      - "7002:7002"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      mysql_server2:
+        condition: service_healthy
+
+
+  phpmyadmin: #PHPmyAdmin docker container
+    image: phpmyadmin:5.2.0
+    container_name: PhpMyAdmin
+    links:
+      - mysql_server2
+    restart: always
+    ports:
+      - 5013:80
+    environment:
+      - PMA_ARBITRARY=1
+
+
+
+  mysql_server2: #MySQL DB docker container
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=clothing-db'
+      - 'MYSQL_USER=user'
+      - 'MYSQL_PASSWORD=secretpwd'
+      - 'MYSQL_ROOT_PASSWORD=verysecretpwd'
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-uuser",
+          "-psecretpwd",
+          "-h",
+          "localhost",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10

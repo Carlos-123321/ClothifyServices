@@ -1,0 +1,204 @@
+  version: '3.6'
+
+  services:
+    api-gateway:
+      build: api-gateway
+      hostname: api-gateway
+      ports:
+        - "8080:8080"
+      environment:
+        - SPRING_PROFILES_ACTIVE=docker
+      depends_on:
+        - clothingsubdomain-service
+        - customersubdomain-service
+        - designersubdomain-service
+        - employeessubdomain-service
+
+    customersubdomain-service:
+      build: customersubdomain-service
+      hostname: customersubdomain-service
+      ports:
+        - "7001:7001"
+      environment:
+        - SPRING_PROFILES_ACTIVE=docker
+      depends_on:
+        mysql_server1:
+          condition: service_healthy
+
+    mysql_server1:
+      image: 'mysql:latest'
+      environment:
+        - 'MYSQL_DATABASE=customer-db'
+        - 'MYSQL_USER=user'
+        - 'MYSQL_PASSWORD=secretpwd'
+        - 'MYSQL_ROOT_PASSWORD=verysecretpwd'
+      ports:
+        - "3307:3306"
+      healthcheck:
+        test:
+          [
+            "CMD",
+            "mysqladmin",
+            "ping",
+            "-uuser",
+            "-psecretpwd",
+            "-h",
+            "localhost",
+          ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+    employeessubdomain-service:
+      #    build: employeessubdomain-service
+      build: employeessubdomain-service
+      hostname: employeessubdomain-service
+      ports:
+        - "7002:7002"
+      environment:
+        - "SPRING_PROFILES_ACTIVE=docker"
+      depends_on:
+        mysql_server2:
+          condition: service_healthy
+
+    mysql_server2:
+      image: 'mysql:latest'
+      environment:
+        - 'MYSQL_DATABASE=employee-db'
+        - 'MYSQL_USER=user'
+        - 'MYSQL_PASSWORD=secretpwd'
+        - 'MYSQL_ROOT_PASSWORD=verysecretpwd'
+      ports:
+        - "3308:3306"
+      healthcheck:
+        test:
+          [
+            "CMD",
+            "mysqladmin",
+            "ping",
+            "-uuser",
+            "-psecretpwd",
+            "-h",
+            "localhost",
+          ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+
+    designersubdomain-service:
+      #    build: designersubdomain-service
+      build: designersubdomain-service
+      hostname: designersubdomain-service
+      ports:
+        - "7003:7003"
+      environment:
+        - "SPRING_PROFILES_ACTIVE=docker"
+      depends_on:
+        mysql_server3:
+          condition: service_healthy
+
+    mysql_server3:
+      image: 'mysql:latest'
+      environment:
+        - 'MYSQL_DATABASE=product-db'
+        - 'MYSQL_USER=user'
+        - 'MYSQL_PASSWORD=secretpwd'
+        - 'MYSQL_ROOT_PASSWORD=verysecretpwd'
+      ports:
+        - "3309:3306"
+      healthcheck:
+        test:
+          [
+            "CMD",
+            "mysqladmin",
+            "ping",
+            "-uuser",
+            "-psecretpwd",
+            "-h",
+            "localhost",
+          ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+    clothingsubdomain-service:
+      build: clothingsubdomain-service
+      hostname: clothingsubdomain-service
+      ports:
+        - "7004:7004"
+      environment:
+        - SPRING_PROFILES_ACTIVE=docker
+      depends_on:
+        mysql_server4:
+          condition: service_healthy
+
+
+    mysql_server4:
+      image: 'mysql:latest'
+      environment:
+        - 'MYSQL_DATABASE=order-db'
+        - 'MYSQL_USER=user'
+        - 'MYSQL_PASSWORD=secretpwd'
+        - 'MYSQL_ROOT_PASSWORD=verysecretpwd'
+      ports:
+        - "3310:3308"
+      healthcheck:
+        test:
+          [
+            "CMD",
+            "mysqladmin",
+            "ping",
+            "-uuser",
+            "-psecretpwd",
+            "-h",
+            "localhost",
+          ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+
+    phpmyadmin1:
+      image: phpmyadmin:5.2.0
+      container_name: PhpMyAdmin1
+      links:
+        - mysql_server1
+      restart: always
+      ports:
+        - 5013:80
+      environment:
+        - PMA_ARBITRARY=1
+
+    phpmyadmin2:
+      image: phpmyadmin:5.2.0
+      container_name: PhpMyAdmin2
+      links:
+        - mysql_server2
+      restart: always
+      ports:
+        - 5014:80
+      environment:
+        - PMA_ARBITRARY=1
+
+    phpmyadmin3:
+      image: phpmyadmin:5.2.0
+      container_name: PhpMyAdmin3
+      links:
+        - mysql_server3
+      restart: always
+      ports:
+        - 5015:80
+      environment:
+        - PMA_ARBITRARY=1
+
+    phpmyadmin4:
+      image: phpmyadmin:5.2.0
+      container_name: PhpMyAdmin4
+      links:
+        - mysql_server4
+      restart: always
+      ports:
+        - 5016:80
+      environment:
+        - PMA_ARBITRARY=1
